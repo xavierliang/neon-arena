@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neon Arena · 霓虹竞技场</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="scope" class="hidden"></div>
+  <div id="shield-fx"></div>
+  <div id="power-fx"></div>
+
+  <div id="hud" class="hidden">
+    <div id="crosshair"></div>
+    <div id="hitmarker"></div>
+
+    <div id="top-left">
+      <div id="score">SCORE 0</div>
+      <div id="wave">WAVE 1</div>
+      <div id="revives"></div>
+    </div>
+    <div id="team"></div>
+    <canvas id="radar" width="160" height="160"></canvas>
+
+    <div id="enemies-left"></div>
+    <div id="tracker" class="hidden"><span id="tracker-arrow">▲</span><span id="tracker-text"></span></div>
+    <div id="boss" class="hidden"><div id="boss-name"></div><div class="boss-bar"><div id="boss-fill"></div></div></div>
+    <div id="banner"></div>
+    <div id="toast"></div>
+    <div id="prompt" class="hidden"></div>
+    <div id="build-hint" class="hidden">建造模式 · BUILD MODE　左键放墙 Click to place · Q 退出 Exit</div>
+
+    <div id="abilities"></div>
+    <div id="bottom-left">
+      <div class="bar-row">
+        <div class="label armor">AR</div>
+        <div class="bar"><div id="armor-fill"></div></div>
+        <div id="armor-text">0</div>
+      </div>
+      <div class="bar-row">
+        <div class="label hp">HP</div>
+        <div class="bar"><div id="health-fill"></div></div>
+        <div id="health-text">100</div>
+      </div>
+    </div>
+
+    <div id="weapon-bar"></div>
+
+    <div id="bottom-right">
+      <div id="weapon-name"></div>
+      <div id="ammo">30<span> / ∞</span></div>
+      <div id="reload-hint">R 换弹 · Reload</div>
+      <div id="bricks">🧱 30</div>
+    </div>
+  </div>
+
+  <div id="damage"></div>
+
+  <div id="screen-start" class="screen">
+    <div class="card wide">
+      <h1>NEON ARENA</h1>
+      <p class="sub">霓虹竞技场 · 3D Shooter</p>
+      <div class="modes">
+        <button class="mode" data-mode="arena">
+          <span class="mi">⚔️</span><b>竞技场 · ARENA</b>
+          <small>一波一波的敌人，每波选奖励<br>Survive waves, pick rewards</small>
+        </button>
+        <button class="mode" data-mode="wilds">
+          <span class="mi">🌍</span><b>荒野探险 · WILDS</b>
+          <small>超大真实地图，打败 12 只怪兽 + 最终 BOSS<br>Huge realistic map: 12 monsters + a final boss</small>
+        </button>
+        <button class="mode" data-mode="space">
+          <span class="mi">🚀</span><b>太空冒险 · SPACE</b>
+          <small>5 个星球，能飞，坐火箭打 Boss<br>5 planets, fly, ride rockets</small>
+        </button>
+      </div>
+      <div class="team-pick">🗺️ 地图大小 · MAP SIZE
+        <button class="size mini" data-size="normal">普通 Normal</button><button class="size mini" data-size="big">大 Big</button><button class="size mini" data-size="huge">超大 Huge</button>
+      </div>
+      <div class="team-pick">🤖 AI 队友 · TEAMMATES
+        <button id="team-minus" class="mini">−</button><span id="team-count">2</span><button id="team-plus" class="mini">+</button>
+      </div>
+      <ul class="controls">
+        <li><b>W A S D</b> 移动 · Move</li>
+        <li><b>Mouse</b> 瞄准 · Aim</li>
+        <li><b>Left Click</b> 射击 · Shoot</li>
+        <li><b>Right Click</b> 狙击镜 · Scope</li>
+        <li><b>1 – 6 / Wheel</b> 换武器 · Weapons</li>
+        <li><b>V</b> 挥剑 · Sword Slash</li>
+        <li><b>Q</b> 造墙 · Build Walls</li>
+        <li><b>R</b> 换弹 · Reload</li>
+        <li><b>Space</b> 跳 · Jump</li>
+        <li><b>Shift</b> 冲刺 · Sprint</li>
+      </ul>
+      <p class="best">最高分 · BEST <span id="best-start">0</span></p>
+    </div>
+  </div>
+
+  <div id="screen-pause" class="screen hidden">
+    <div class="card">
+      <h2>暂停 · PAUSED</h2>
+      <div class="btn-row">
+        <button id="btn-resume">继续 · RESUME</button>
+        <button id="btn-menu-pause" class="ghost">主菜单 · MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-reward" class="screen hidden">
+    <div class="reward-wrap">
+      <h2 id="reward-title">选一个奖励 · CHOOSE A REWARD</h2>
+      <div id="reward-cards"></div>
+      <p class="tip">点击卡片，或按 1 / 2 / 3 · Click a card or press 1 / 2 / 3</p>
+    </div>
+  </div>
+
+  <div id="screen-over" class="screen hidden">
+    <div class="card">
+      <h2 id="over-title" class="danger">GAME OVER</h2>
+      <p class="stat">得分 · SCORE <b id="final-score">0</b></p>
+      <p class="stat"><span id="final-label">波数 · WAVE</span> <b id="final-wave">1</b></p>
+      <p class="best">最高分 · BEST <span id="best">0</span></p>
+      <div class="btn-row">
+        <button id="btn-continue" class="hidden">继续探险 · KEEP EXPLORING</button>
+        <button id="btn-restart">再来一局 · PLAY AGAIN</button>
+        <button id="btn-menu" class="ghost">主菜单 · MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js?v=15"></script>
+</body>
+</html>

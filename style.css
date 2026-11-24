@@ -1,0 +1,273 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #05060f;
+  color: #e8f6ff;
+  font-family: "Avenir Next", "PingFang SC", system-ui, sans-serif;
+  user-select: none;
+}
+
+#game { display: block; width: 100vw; height: 100vh; }
+
+.hidden { display: none !important; }
+
+/* ---------- HUD ---------- */
+#hud { position: fixed; inset: 0; pointer-events: none; }
+
+#crosshair {
+  position: absolute; left: 50%; top: 50%;
+  width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  background: #8ff; border-radius: 50%;
+  box-shadow: 0 0 6px #3ff;
+}
+#crosshair::before {
+  content: ""; position: absolute; left: -9px; top: -9px;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(120, 255, 255, 0.6); border-radius: 50%;
+}
+
+#hitmarker {
+  position: absolute; left: 50%; top: 50%;
+  width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  opacity: 0; transition: opacity 0.08s;
+}
+#hitmarker::before, #hitmarker::after {
+  content: ""; position: absolute; left: 50%; top: 0;
+  width: 3px; height: 100%; margin-left: -1.5px;
+  background: #fff; box-shadow: 0 0 6px #fff;
+}
+#hitmarker::before { transform: rotate(45deg); }
+#hitmarker::after { transform: rotate(-45deg); }
+#hitmarker.show { opacity: 1; }
+#hitmarker.kill::before, #hitmarker.kill::after { background: #ff3b5c; box-shadow: 0 0 8px #ff3b5c; }
+
+#top-left { position: absolute; left: 24px; top: 20px; text-shadow: 0 0 10px #0ff; }
+#score { font-size: 28px; font-weight: 800; letter-spacing: 2px; }
+#wave { font-size: 16px; color: #ff6ad5; letter-spacing: 3px; text-shadow: 0 0 10px #f0a; }
+
+#radar {
+  position: absolute; right: 20px; top: 20px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: rgba(10, 20, 40, 0.55);
+  border: 2px solid rgba(80, 240, 255, 0.5);
+  box-shadow: 0 0 16px rgba(0, 255, 255, 0.25);
+}
+
+#banner {
+  position: absolute; left: 0; right: 0; top: 24%;
+  text-align: center; font-size: 56px; font-weight: 900; letter-spacing: 6px;
+  color: #fff; text-shadow: 0 0 20px #0ff, 0 0 40px #f0f;
+  opacity: 0; transform: scale(0.8); transition: opacity 0.3s, transform 0.3s;
+}
+#banner.show { opacity: 1; transform: scale(1); }
+#banner small { display: block; font-size: 18px; letter-spacing: 4px; color: #9ff; }
+
+#enemies-left {
+  position: absolute; left: 0; right: 0; top: 20px;
+  text-align: center; font-size: 15px; letter-spacing: 2px; color: #ff8fa3;
+  text-shadow: 0 0 8px #f03;
+}
+
+#bottom-left { position: absolute; left: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-row .label { font-weight: 800; width: 26px; }
+.label.hp { color: #7fffb0; text-shadow: 0 0 8px #0f8; }
+.label.armor { color: #7fc8ff; text-shadow: 0 0 8px #08f; }
+.bar {
+  width: 240px; height: 14px; border-radius: 7px; overflow: hidden;
+  background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25);
+}
+#health-fill { height: 100%; width: 100%; background: #3dff9a; box-shadow: 0 0 12px #3dff9a; transition: width 0.15s; }
+#armor-fill { height: 100%; width: 0; background: #4db8ff; box-shadow: 0 0 12px #4db8ff; transition: width 0.15s; }
+#health-text, #armor-text { font-size: 22px; font-weight: 800; min-width: 44px; }
+
+#revives { margin-top: 6px; font-size: 16px; color: #ffe27a; text-shadow: 0 0 8px #fa0; }
+
+#toast {
+  position: absolute; left: 0; right: 0; top: 62%;
+  text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 2px;
+  color: #fff; text-shadow: 0 0 10px #0ff; opacity: 0; transition: opacity 0.2s;
+}
+#toast.show { opacity: 1; }
+
+#build-hint {
+  position: absolute; left: 50%; top: 58%; transform: translateX(-50%);
+  padding: 8px 16px; border-radius: 999px; font-size: 14px; letter-spacing: 1px;
+  background: rgba(0, 60, 80, 0.6); border: 1px solid #3ff; color: #bff;
+}
+
+#weapon-bar {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+  display: flex; gap: 6px;
+}
+.slot {
+  min-width: 62px; padding: 5px 7px; border-radius: 10px; text-align: center;
+  background: rgba(10, 20, 40, 0.6); border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 11px; line-height: 1.3; opacity: 0.75;
+}
+.slot .k { font-weight: 900; color: #7ff; }
+.slot .ic { font-size: 20px; display: block; }
+.slot.active { opacity: 1; border-color: #3ff; box-shadow: 0 0 14px rgba(0, 255, 255, 0.5); background: rgba(0, 80, 100, 0.55); }
+.slot.locked { opacity: 0.3; }
+.slot.build.active { border-color: #ffd166; box-shadow: 0 0 14px rgba(255, 200, 80, 0.5); background: rgba(90, 70, 0, 0.5); }
+
+#scope {
+  position: fixed; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(#0f0, #0f0) center / 2px 100% no-repeat,
+    linear-gradient(#0f0, #0f0) center / 100% 2px no-repeat,
+    radial-gradient(circle at center, transparent 34vh, rgba(0, 0, 0, 0.92) 34.3vh);
+  opacity: 0.85;
+}
+
+#bottom-right { position: absolute; right: 28px; bottom: 20px; text-align: right; }
+#weapon-name { font-size: 14px; letter-spacing: 2px; color: #ff9be9; text-shadow: 0 0 8px #f0a; }
+#bricks { margin-top: 4px; font-size: 18px; font-weight: 800; color: #ffd9a0; }
+#ammo { font-size: 44px; font-weight: 900; text-shadow: 0 0 12px #0ff; }
+#ammo span { font-size: 22px; opacity: 0.6; }
+#ammo.low { color: #ff5470; text-shadow: 0 0 12px #f03; }
+#reload-hint { font-size: 14px; opacity: 0.6; letter-spacing: 1px; }
+#reload-hint.active { opacity: 1; color: #ffd166; }
+
+#damage {
+  position: fixed; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(255, 0, 40, 0.75) 100%);
+}
+
+/* ---------- Screens ---------- */
+.screen {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(4, 4, 16, 0.55); backdrop-filter: blur(3px);
+}
+.card {
+  text-align: center; padding: 40px 56px; border-radius: 18px;
+  background: rgba(12, 14, 34, 0.85);
+  border: 1px solid rgba(100, 240, 255, 0.35);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.15), inset 0 0 30px rgba(255, 0, 200, 0.06);
+}
+h1 {
+  font-size: 64px; font-weight: 900; letter-spacing: 8px;
+  background: linear-gradient(90deg, #3ff 0%, #f6f 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 12px rgba(0, 255, 255, 0.5));
+}
+h2 { font-size: 40px; letter-spacing: 4px; margin-bottom: 18px; text-shadow: 0 0 14px #0ff; }
+h2.danger { color: #ff4567; text-shadow: 0 0 16px #f03; }
+.sub { font-size: 18px; letter-spacing: 4px; color: #ff8be8; margin: 6px 0 22px; }
+.controls { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; text-align: left; margin: 0 auto 18px; max-width: 540px; font-size: 15px; }
+.controls b { display: inline-block; min-width: 118px; color: #7ff; }
+.tip { font-size: 13px; opacity: 0.7; margin-bottom: 22px; line-height: 1.6; }
+.stat { font-size: 20px; margin: 6px 0; }
+.stat b { color: #7ff; font-size: 28px; margin-left: 8px; }
+.best { margin-top: 14px; font-size: 14px; opacity: 0.75; letter-spacing: 2px; }
+
+.reward-wrap { text-align: center; }
+#reward-cards { display: flex; gap: 22px; justify-content: center; margin: 26px 0 18px; }
+.reward {
+  cursor: pointer; width: 210px; padding: 26px 18px; border-radius: 18px;
+  background: rgba(12, 14, 34, 0.92);
+  border: 2px solid rgba(100, 240, 255, 0.4);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.reward:hover { transform: translateY(-8px) scale(1.04); border-color: #f6f; box-shadow: 0 0 40px rgba(255, 80, 230, 0.45); }
+.reward .num { font-size: 13px; opacity: 0.5; letter-spacing: 2px; }
+.reward .icon { font-size: 54px; margin: 8px 0 10px; }
+.reward .title { font-size: 20px; font-weight: 900; color: #7ff; }
+.reward .title-en { font-size: 13px; letter-spacing: 1px; color: #ff9be9; margin-bottom: 10px; }
+.reward .desc { font-size: 14px; line-height: 1.5; opacity: 0.85; }
+.reward.weapon { border-color: rgba(255, 200, 80, 0.6); }
+
+button {
+  cursor: pointer; margin-top: 10px;
+  font: inherit; font-size: 20px; font-weight: 800; letter-spacing: 3px;
+  color: #04121a; background: linear-gradient(90deg, #3ff, #f6f);
+  border: none; border-radius: 999px; padding: 14px 40px;
+  box-shadow: 0 0 24px rgba(0, 255, 255, 0.5);
+  transition: transform 0.1s;
+}
+button:hover { transform: scale(1.05); }
+
+/* ---------- Mode select / team ---------- */
+.card.wide { padding: 30px 48px; }
+.modes { display: flex; gap: 18px; justify-content: center; margin-bottom: 14px; }
+button.mode {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  width: 270px; margin: 0; padding: 18px 16px; border-radius: 16px;
+  background: rgba(20, 30, 60, 0.85); color: #e8f6ff;
+  border: 2px solid rgba(100, 240, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+  font-size: 18px; letter-spacing: 1px;
+}
+button.mode:hover { border-color: #f6f; box-shadow: 0 0 30px rgba(255, 80, 230, 0.45); }
+button.mode .mi { font-size: 40px; }
+button.mode small { font-size: 13px; font-weight: 500; letter-spacing: 0; opacity: 0.8; line-height: 1.5; }
+.team-pick { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px 0 16px; font-size: 16px; letter-spacing: 1px; }
+button.mini { margin: 0; padding: 2px 14px; font-size: 18px; }
+#team-count { min-width: 20px; font-size: 22px; font-weight: 900; color: #7ff; }
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+button.ghost { background: transparent; color: #9ff; border: 2px solid rgba(100, 240, 255, 0.5); box-shadow: none; }
+
+/* ---------- Team, tracker, boss, abilities ---------- */
+#team { position: absolute; left: 24px; top: 128px; display: flex; flex-direction: column; gap: 3px; }
+.mate { display: flex; align-items: center; gap: 8px; padding: 2px 8px; border-radius: 7px; background: rgba(10, 20, 40, 0.55); font-size: 12px; }
+.mate .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+.mate .nm { min-width: 74px; font-weight: 700; }
+.mate .mbar { width: 64px; height: 5px; border-radius: 3px; overflow: hidden; background: rgba(255, 255, 255, 0.15); }
+.mate .mbar div { height: 100%; background: #3dff9a; }
+.mate.down { opacity: 0.5; }
+
+#tracker {
+  position: absolute; left: 50%; top: 46px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; padding: 6px 16px; border-radius: 999px;
+  background: rgba(40, 10, 30, 0.6); border: 1px solid rgba(255, 90, 120, 0.6);
+  font-size: 15px; font-weight: 700; color: #ffd0da; white-space: nowrap;
+}
+#tracker.loot { background: rgba(50, 36, 0, 0.6); border-color: rgba(255, 210, 63, 0.7); color: #ffe9a8; }
+#tracker-arrow { display: inline-block; font-size: 18px; color: #ff4567; }
+#tracker.loot #tracker-arrow { color: #ffd23f; }
+
+#boss { position: absolute; left: 50%; top: 88px; width: 420px; transform: translateX(-50%); text-align: center; }
+#boss-name { margin-bottom: 4px; font-size: 16px; font-weight: 900; letter-spacing: 2px; color: #ffcf5a; text-shadow: 0 0 10px #f80; }
+.boss-bar { height: 12px; border-radius: 6px; overflow: hidden; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 200, 90, 0.6); }
+#boss-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff3b5c, #ffb020); box-shadow: 0 0 12px #f60; }
+
+#abilities { position: absolute; left: 24px; bottom: 96px; display: flex; gap: 8px; }
+.ab { padding: 4px 10px; border-radius: 8px; font-size: 13px; background: rgba(10, 20, 40, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); }
+.ab.ready { border-color: #7ff; color: #bff; }
+.ab.on { border-color: #ffd23f; color: #ffe27a; box-shadow: 0 0 10px rgba(255, 210, 63, 0.5); }
+
+#shield-fx, #power-fx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+#shield-fx { background: radial-gradient(ellipse at center, transparent 50%, rgba(80, 180, 255, 0.55) 100%); }
+#power-fx { background: radial-gradient(ellipse at center, transparent 60%, rgba(255, 200, 40, 0.4) 100%); }
+
+/* ---------- Legendary loot ---------- */
+#reward-title.legend { color: #ffe27a; text-shadow: 0 0 16px #fa0; }
+.reward.legend {
+  border-color: #ffd23f;
+  background: linear-gradient(180deg, rgba(60, 40, 0, 0.94), rgba(20, 14, 0, 0.94));
+  box-shadow: 0 0 36px rgba(255, 200, 60, 0.45);
+}
+.reward.legend .title { color: #ffe27a; }
+
+/* Keep HUD text readable on the bright daytime map */
+#score, #wave, #revives, #weapon-name, #reload-hint, #bricks, #health-text, #armor-text, .bar-row .label {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.45);
+}
+#enemies-left { width: fit-content; margin: 0 auto; padding: 2px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); }
+#enemies-left:empty { display: none; }
+#top-left { padding: 6px 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
+
+/* Map choice */
+.modes { flex-wrap: wrap; }
+button.mode { width: 220px; }
+button.size { font-size: 14px; letter-spacing: 1px; background: rgba(20, 30, 60, 0.85); color: #9ff; border: 2px solid rgba(100, 240, 255, 0.4); box-shadow: none; }
+button.size.on { background: linear-gradient(90deg, #3ff, #f6f); color: #04121a; border-color: transparent; }
+#prompt {
+  position: absolute; left: 50%; top: 64%; transform: translateX(-50%);
+  padding: 10px 20px; border-radius: 999px; font-size: 18px; font-weight: 800; letter-spacing: 1px;
+  background: rgba(40, 20, 0, 0.7); border: 2px solid #ffb020; color: #ffe2a0; text-shadow: 0 0 8px #f80;
+}
