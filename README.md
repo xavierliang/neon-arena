@@ -1,10 +1,12 @@
 # Neon Arena · 霓虹竞技场
 
-> ✨ **寄语 · A Note for the Young Creator**
+**Created by George**
+
+> ✨ **致 George · A Note for George**
 >
-> 愿你一直玩得开心，永远保持这份好奇心，去探索这个世界，也去创造属于你自己的世界。
+> 致 George：愿你一直玩得开心，永远保持这份好奇心，去探索这个世界，也去创造属于你自己的世界。
 >
-> *May you always have fun, stay curious, explore this big wide world, and keep building worlds of your own.*
+> *For George — may you always have fun, stay curious, explore this big wide world, and keep building worlds of your own.*
 
 🎮 **在线试玩 / Play Online (GitHub Pages)**: <https://xavierliang.github.io/neon-arena/>
 

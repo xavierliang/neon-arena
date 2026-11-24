@@ -272,7 +272,20 @@ button.size.on { background: linear-gradient(90deg, #3ff, #f6f); color: #04121a;
   background: rgba(40, 20, 0, 0.7); border: 2px solid #ffb020; color: #ffe2a0; text-shadow: 0 0 8px #f80;
 }
 
-/* ---------- Bilingual dedication ---------- */
+/* ---------- Creator credit & bilingual dedication ---------- */
+.byline {
+  margin: -12px 0 18px;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(210, 245, 255, 0.85);
+}
+.byline b {
+  color: #ffe27a;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255, 210, 80, 0.55);
+}
+
 .card.wide { max-height: 94vh; overflow-y: auto; }
 .dedication {
   margin-top: 16px;
